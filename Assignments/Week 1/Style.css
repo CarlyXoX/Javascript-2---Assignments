@@ -1,0 +1,64 @@
+:root {
+  --text: #0c1b22;
+  --background: #f0f7f9;
+  --primary: #003e7a;
+  --secondary: #d4e8ff;
+  --accent: #4ac3c4;
+}
+
+header {
+    background-color: var(--primary);
+    padding: 20px;
+    padding-top: 30;
+
+}
+
+.navbar {
+    background-color: var(--primary);
+    color: var(--secondary);
+}
+
+.navbar .nav-link {
+    color: var(--secondary) !important;
+}
+
+.navbar .navbar-brand {
+    color: var(--secondary) !important;
+
+}
+
+.navbar .navbar-toggler {
+    color: var(--secondary) !important;
+
+}
+
+.navbar .nav-item:hover {
+    background-color: var(--secondary);
+    
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary) !important;
+}
+
+h1 {
+    color: var(--primary);
+    padding-left: 30px;
+    padding: 20px;
+
+}
+
+h2 {
+    padding-left: 30px;
+    padding-top: 30px;
+    padding: 10px;
+}
+
+li {
+    padding: 10px;
+    align-content: center;
+}
+
+p {
+    padding: 20px;
+}
