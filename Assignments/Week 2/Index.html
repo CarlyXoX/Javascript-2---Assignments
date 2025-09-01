@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yellowstone Job Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="Style.css">
+</head>
+
+<body>
+    <header>
+        <!--Add Logo and org title here-->
+        <h1>Job Oportunities</h1>
+    </header>
+    <h2>Select Positions of Interest:</h2>
+
+    <!--Category and Job Title dropdowns-->
+    <div class="row g-3 mb-3">
+      <!-- Category Dropdown -->
+      <div class="col-md-6">
+        <label for="categoryDropdown" class="form-label">Select a Category</label>
+        <select class="form-select" id="categoryDropdown">
+          <option selected disabled>Choose...</option>
+        </select>
+      </div>
+
+      <!-- Job Dropdown -->
+      <div class="col-md-6">
+        <label for="jobDropdown" class="form-label">Select a Job</label>
+        <select class="form-select" id="jobDropdown" disabled>
+          <option selected disabled>Choose a category first...</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Add Another Button -->
+    <div class="mb-4">
+      <button id="addSelectionBtn" type="button">Add Position 
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Selected Results -->
+    <div class="mb-4">
+        <h4>Selected Roles:</h4>
+        <ul id="selectionList" class="list-group"></ul>
+    </div>
+
+    <!--Next Button-->
+    <div class="mb-4">
+        <button id="nextSection" type="button" onclick="window.location.href='Personal.html'">Next 
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Categories and Jobs
+        const jobs = {
+        "Administrative & Employee Support": [
+            "Administrative Assistant", "Budget Analyst", "Contract Specialist",
+            "Mailing & Receiving Specialist", "Property & Supply Technician"
+        ],
+        "Cultural Resources": [
+            "Archeologist", "Historian", "Historic Architect",
+            "Museum Technician", "Museum Specialist", "Cultural Anthropologist"
+        ],
+        "Education / Resource Education & Youth Programs": [
+            "Education Technician", "Education Specialist"
+        ],
+        "Emergency Medical Services": [
+            "Emergency Medical Technician (EMT)", "Paramedic"
+        ],
+        "Facilities & Utilities": [
+            "Maintenance Worker/Mechanic", "Electrician", "HVAC Technician",
+            "Plumber", "Water/Wastewater Specialist/Operator", "Heavy Equipment Operator"
+        ],
+        "Information Technology": [
+            "IT Specialist", "Telecommunications/Radio Technician"
+        ],
+        "Law Enforcement": [
+            "Law Enforcement Park Ranger"
+        ],
+        "Natural Resources": [
+            "Geologist/Volcanologist", "Hydrologist", "Air & Water Quality Specialist",
+            "Ecologist/Natural Resource Scientist"
+        ],
+        "Visitor Experience": [
+            "Park Guide", "Park Ranger (Interpretation)", "Visitor Information Specialist"
+        ],
+        "Visual & Written Arts": [
+            "Photographer/Videographer", "Writer/Editor", "Graphic Designer/Visual Information Specialist"
+        ],
+        "Wildland & Structural Fire": [
+            "Wildland Firefighter", "Structural Firefighter", "Fire Dispatcher"
+        ],
+        "Wildlife": [
+            "Wildlife Biologist", "Wildlife Technician"
+        ],
+        "Commercial Services": [
+            "Concessions/Commercial Services Management Specialist"
+        ]
+        };
+
+        const categoryDropdown = document.getElementById("categoryDropdown");
+        const jobDropdown = document.getElementById("jobDropdown");
+        const addSelectionBtn = document.getElementById("addSelectionBtn");
+        const selectionList = document.getElementById("selectionList");
+
+        // Populate categories
+        Object.keys(jobs).forEach(category => {
+        let option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categoryDropdown.appendChild(option);
+        });
+
+        // Handle category selection
+        categoryDropdown.addEventListener("change", function() {
+        let selectedCategory = this.value;
+        jobDropdown.innerHTML = ""; // clear old jobs
+
+        if (selectedCategory && jobs[selectedCategory]) {
+            jobDropdown.disabled = false;
+            let defaultOption = document.createElement("option");
+            defaultOption.textContent = "Choose...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            jobDropdown.appendChild(defaultOption);
+
+            jobs[selectedCategory].forEach(job => {
+            let option = document.createElement("option");
+            option.value = job;
+            option.textContent = job;
+            jobDropdown.appendChild(option);
+            });
+        }
+        });
+
+        // Enable button when job selected
+        jobDropdown.addEventListener("change", function() {
+        addSelectionBtn.disabled = !this.value;
+        });
+
+        // Add selection to list and reset dropdowns
+        addSelectionBtn.addEventListener("click", function() {
+        const category = categoryDropdown.value;
+        const job = jobDropdown.value;
+
+        if (category && job) {
+            // Add to list
+            let li = document.createElement("li");
+            li.className = "list-group-item";
+            li.textContent = `${category} → ${job}`;
+            selectionList.appendChild(li);
+
+            // Reset dropdowns
+            categoryDropdown.selectedIndex = 0;
+            jobDropdown.innerHTML = "<option selected disabled>Choose a category first...</option>";
+            jobDropdown.disabled = true;
+            addSelectionBtn.disabled = true;
+        }
+        });
+    </script>
+
+</body>
+</html>
