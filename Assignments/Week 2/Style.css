@@ -1,0 +1,54 @@
+root {
+    --text: #140e15;
+    --background: #f8f5f8;
+    --primary: #e6b83a;
+    --secondary: #2f502a;
+    --accent: #5ba7c5;
+}
+
+header {
+    width:100%;
+    background-color: #e6b83a;
+    padding:10px;
+    padding-left:30px;
+}
+
+h2 {
+    padding:10px;
+    padding-top:20px;
+    padding-left:20px;
+}
+
+form {
+    margin:10px;
+    margin-left:30px;
+    align-self: center;
+    outline-color: #2f502a;
+    outline-width: 4px;
+}
+
+form > label {
+    font-size: large;
+}
+
+form > input {
+    background-color:#5ba7c5
+}
+
+.form-control {
+    box-shadow: #5ba7c5;
+}
+
+div > button {
+    color:#f8f5f8;
+    font-size: large;
+    background-color: #2f502a;
+    padding:10px;
+    border-radius: 8%;
+}
+
+div > button:hover {
+    color:#140e15;
+    background-color: #5ba7c5;
+    animation-duration: 2s;
+}
