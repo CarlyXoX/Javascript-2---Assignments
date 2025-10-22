@@ -1,34 +1,40 @@
 <template>
   <div class="cats-card">
-    <h2>{{ cats.name }}</h2>
-    <p><strong>Age:</strong> {{ cats.age }} years</p>
-    <p><strong>Adoption Fee:</strong> ${{ cats.adoptionFee }}</p>
-    <p><strong>Description:</strong> {{ cats.description }}</p>
+    <h2>{{ cat.name }}</h2>
+    <p><strong>Age:</strong> {{ cat.age }} years</p>
+    <p><strong>Adoption Fee:</strong> ${{ cat.adoptionFee }}</p>
+    <p><strong>Description:</strong> {{ cat.description }}</p>
 
     <div class="actions">
       <button @click="toggleFavorite">
-        {{ cats.favorite ? '✰' : '★' }}
+        {{ isFavorite ? '★' : '☆' }}
       </button>
-      <button @click="$emit('open-modal', cats)">More Info</button>
-      <button @click="$emit('open-scheduler', cats)">Schedule Meet</button>
+      <button @click="$emit('open-modal', cat)">More Info</button>
+      <button @click="$emit('open-scheduler', cat)">Schedule Meet</button>
     </div>
   </div>
 </template>
 
 <script>
+import { computed } from 'vue';
+
 export default {
-  name: 'CatsCard',
+  name: 'ListingCard',
   props: {
-    cats: Object
+    cat: Object,
+    favoriteIds: Array
   },
-  emits: ['favorite-changed', 'open-modal', 'open-scheduler'],
-  methods: {
-    toggleFavorite() {
-      const updatedCat = { ...this.cats, favorite: !this.cats.favorite }
-      this.$emit('favorite-changed', updatedCat)
-    }
+  emits: ['toggle-favorite', 'open-modal', 'open-scheduler'],
+  setup(props, { emit }) {
+    const isFavorite = computed(() => props.favoriteIds.includes(props.cat.id));
+
+    const toggleFavorite = () => {
+      emit('toggle-favorite', props.cat.id);
+    };
+
+    return { isFavorite, toggleFavorite };
   }
-}
+};
 </script>
 
 <style scoped>
@@ -40,11 +46,9 @@ export default {
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
 .actions {
   margin-top: 1rem;
 }
-
 .actions button {
   margin-right: 0.5rem;
   padding: 0.3rem 0.7rem;
@@ -54,7 +58,6 @@ export default {
   background: #007BFF;
   color: white;
 }
-
 .actions button:hover {
   background: #0056b3;
 }

@@ -5,8 +5,7 @@
         "age": 2,
         "fee": 40,
         "img": "Images/Black Cat.jpg",
-        "description": "I'm full of energy and need an owner who can keep up with me.",
-        "favorite": false
+        "description": "I'm full of energy and need an owner who can keep up with me."
     },
     {
         "id": 2,
@@ -14,8 +13,7 @@
         "age": 4,
         "fee": 30,
         "img": "Images/Gray Tabby.jpg",
-        "description": "A distinguished gentleman ready to oversee your household.",
-        "favorite": false
+        "description": "A distinguished gentleman ready to oversee your household."
     },
     {
         "id": 3,
@@ -23,8 +21,7 @@
         "age": 1,
         "fee": 40,
         "img": "Images/Orange Tabby.jpg",
-        "description": "I love taking long naps in the sun, but I'm full of energy in the evening.",
-        "favorite": false
+        "description": "I love taking long naps in the sun, but I'm full of energy in the evening."
     },
     {
         "id": 4,
@@ -32,7 +29,6 @@
         "age": 1,
         "fee": 50,
         "img": "Images/Tortishell Cat.jpg",
-        "description": "Young and feisty, but sweet as caramel with treats!",
-        "favorite": false
+        "description": "Young and feisty, but sweet as caramel with treats!"
     }
 ]
