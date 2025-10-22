@@ -1,11 +1,11 @@
 <template>
-  <div class="app-container">
+  <div id="app">
     <h1>🐾 Cat Adoption Center 🐾</h1>
 
-    <div v-if="loading" class="status">Loading cats...</div>
-    <div v-if="error" class="status error">{{ error }}</div>
+    <div v-if="loading">Loading cats...</div>
+    <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="!loading && !currentView">
+    <div v-if="!loading && cats.length && !currentView">
       <div class="cats-grid">
         <ListingCard
           v-for="cat in cats"
@@ -16,15 +16,16 @@
           @open-modal="openModal"
         />
       </div>
-      <button @click="viewFavorites">View Favorites</button>
-      <button @click="viewScheduler">View Scheduled Meet-&-Greets</button>
+
+      <button @click="currentView='favorites'">View Favorites</button>
+      <button @click="currentView='scheduler'">View Scheduled Meet-&-Greets</button>
     </div>
 
     <Modal
       v-if="modalCat"
       :cat="modalCat"
-      @close="modalCat = null"
-      @go-to-form="openForm"
+      @close="modalCat=null"
+      @go-to-form="openForm(modalCat)"
     />
 
     <Form
@@ -52,14 +53,13 @@
 </template>
 
 <script>
-import ListingCard from './Components/ListingCard.vue'
-import Modal from './Components/Modal.vue'
-import Form from './Components/Form.vue'
-import FavoritesList from './Components/FavoritesList.vue'
-import Scheduler from './Components/Scheduler.vue'
+import ListingCard from './components/ListingCard.vue';
+import Modal from './components/Modal.vue';
+import Form from './components/Form.vue';
+import FavoritesList from './components/FavoritesList.vue';
+import Scheduler from './components/Scheduler.vue';
 
 export default {
-  name: 'App',
   components: { ListingCard, Modal, Form, FavoritesList, Scheduler },
   data() {
     return {
@@ -70,84 +70,65 @@ export default {
       currentView: null,
       loading: true,
       error: null
-    }
+    };
   },
   async mounted() {
     try {
-      const catsRes = await fetch('./cats.json')
-      this.cats = await catsRes.json()
+      // load cats
+      const res = await fetch('cats.json');
+      if (!res.ok) throw new Error('Could not load cats.json');
+      this.cats = await res.json();
 
-      const stored = localStorage.getItem('userPrefs')
-      if (stored) {
-        this.userPrefs = JSON.parse(stored)
-        this.favorites = this.userPrefs.favorites || []
-      } else {
-        const prefsRes = await fetch('./userPreferences.json')
-        this.userPrefs = await prefsRes.json()
-        this.favorites = this.userPrefs.favorites || []
+      // load preferences
+      const stored = localStorage.getItem('userPrefs');
+      if (stored) this.userPrefs = JSON.parse(stored);
+      else {
+        const prefsRes = await fetch('userPreferences.json');
+        this.userPrefs = await prefsRes.json();
       }
-    } catch (e) {
-      console.error(e)
-      this.error = 'Unable to load data. Make sure you’re running a local server.'
+
+      this.favorites = this.userPrefs.favorites || [];
+    } catch (err) {
+      console.error(err);
+      this.error = err.message;
     } finally {
-      this.loading = false
+      this.loading = false;
     }
   },
   methods: {
     toggleFavorite(cat) {
-      const idx = this.favorites.findIndex(f => f.id === cat.id)
-      if (idx >= 0) this.favorites.splice(idx, 1)
-      else this.favorites.push(cat)
+      const idx = this.favorites.findIndex(f => f.id === cat.id);
+      if (idx >= 0) this.favorites.splice(idx, 1);
+      else this.favorites.push(cat);
 
-      this.userPrefs.favorites = this.favorites
-      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
+      this.userPrefs.favorites = this.favorites;
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs));
     },
     removeFavorite(cat) {
-      this.favorites = this.favorites.filter(f => f.id !== cat.id)
-      this.userPrefs.favorites = this.favorites
-      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
+      this.favorites = this.favorites.filter(f => f.id !== cat.id);
+      this.userPrefs.favorites = this.favorites;
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs));
     },
     openModal(cat) {
-      this.modalCat = cat
+      this.modalCat = cat;
     },
-    openForm(cat=null) {
-      this.modalCat = cat
-      this.currentView = 'form'
+    openForm(cat) {
+      this.modalCat = cat;
+      this.currentView = 'form';
     },
     submitAppointment(meeting) {
-      if (!this.userPrefs.meetings) this.userPrefs.meetings = []
-      this.userPrefs.meetings.push(meeting)
-      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
-      this.currentView = null
-      this.modalCat = null
-    },
-    viewFavorites() {
-      this.currentView = 'favorites'
-    },
-    viewScheduler() {
-      this.currentView = 'scheduler'
+      if (!this.userPrefs.meetings) this.userPrefs.meetings = [];
+      this.userPrefs.meetings.push(meeting);
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs));
+      this.currentView = null;
+      this.modalCat = null;
     }
   }
-}
+};
 </script>
 
-<style scoped>
-.app-container {
-  padding: 2rem;
-}
-
-.cats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
-  gap: 1rem;
-}
-
-.status {
-  text-align: center;
-  font-size: 1.2rem;
-  margin: 1rem 0;
-}
-.status.error {
-  color: red;
-}
+<style>
+#app { padding: 2rem; }
+.cats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 1rem; }
+.error { color: red; }
 </style>

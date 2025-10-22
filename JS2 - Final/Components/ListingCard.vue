@@ -24,15 +24,15 @@ export default {
   },
   computed: {
     isFavorite() {
-      return this.favorites?.some(f => f.id === this.cat.id)
+      return this.favorites?.some(f => f.id === this.cat.id);
     }
   },
   methods: {
     toggleFavorite() {
-      this.$emit('favorite-changed', this.cat)
+      this.$emit('favorite-changed', this.cat);
     }
   }
-}
+};
 </script>
 
 <style scoped>
