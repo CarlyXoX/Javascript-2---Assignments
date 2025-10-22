@@ -1,163 +1,153 @@
 <template>
-  <div id="app">
-    <h1>Welcome to the Cat Adoption Center</h1>
+  <div class="app-container">
+    <h1>🐾 Cat Adoption Center 🐾</h1>
 
-    <!-- Cats Listing -->
-    <div class="cats-list">
-      <ListingCard
-        v-for="cat in cats"
-        :key="cat.id"
-        :cats="cat"
-        :favorite-ids="userPreferences.favorites"
-        @toggle-favorite="handleToggleFavorite"
-        @open-modal="openModal"
-        @open-scheduler="openSchedulerForm"
-      />
+    <div v-if="loading" class="status">Loading cats...</div>
+    <div v-if="error" class="status error">{{ error }}</div>
+
+    <div v-if="!loading && !currentView">
+      <div class="cats-grid">
+        <ListingCard
+          v-for="cat in cats"
+          :key="cat.id"
+          :cat="cat"
+          :favorites="favorites"
+          @favorite-changed="toggleFavorite"
+          @open-modal="openModal"
+        />
+      </div>
+      <button @click="viewFavorites">View Favorites</button>
+      <button @click="viewScheduler">View Scheduled Meet-&-Greets</button>
     </div>
 
-    <!-- Favorites List -->
-    <FavoritesList
-      :userPreferences="userPreferences"
-      @favorite-removed="handleFavoriteRemoved"
+    <Modal
+      v-if="modalCat"
+      :cat="modalCat"
+      @close="modalCat = null"
+      @go-to-form="openForm"
     />
 
-    <!-- Conditional Views -->
     <Form
-      v-if="showForm"
-      :favorites="favoriteCats"
-      @appointment-submitted="handleAppointmentSubmitted"
-      @close-form="showForm = false"
+      v-if="currentView==='form'"
+      :favorites="favorites"
+      :prefilledCat="modalCat"
+      @appointment-submitted="submitAppointment"
+      @back="currentView=null"
+    />
+
+    <FavoritesList
+      v-if="currentView==='favorites'"
+      :favorites="favorites"
+      @favorite-changed="removeFavorite"
+      @back="currentView=null"
     />
 
     <Scheduler
-      v-if="showScheduler"
-      :userPreferences="userPreferences"
-      @meeting-cancelled="handleMeetingCancelled"
-      @open-form="showForm = true"
-    />
-
-    <!-- Modal -->
-    <Modal
-      v-if="modalVisible"
-      :cat="selectedCat"
-      :visible="modalVisible"
-      @close="modalVisible = false"
+      v-if="currentView==='scheduler'"
+      :userPreferences="userPrefs"
+      @go-to-form="openForm"
+      @back="currentView=null"
     />
   </div>
 </template>
 
 <script>
-import ListingCard from './Components/ListingCard.vue';
-import FavoritesList from './Components/FavoritesList.vue';
-import Form from './Components/Form.vue';
-import Scheduler from './Components/Scheduler.vue';
-import Modal from './Components/Modal.vue';
+import ListingCard from './Components/ListingCard.vue'
+import Modal from './Components/Modal.vue'
+import Form from './Components/Form.vue'
+import FavoritesList from './Components/FavoritesList.vue'
+import Scheduler from './Components/Scheduler.vue'
 
 export default {
   name: 'App',
-  components: {
-    ListingCard,
-    FavoritesList,
-    Form,
-    Scheduler,
-    Modal
-  },
+  components: { ListingCard, Modal, Form, FavoritesList, Scheduler },
   data() {
     return {
       cats: [],
-      userPreferences: {
-        user: { id: 1, name: 'Guest User', email: '' },
-        favorites: [],
-        meetings: []
-      },
-      modalVisible: false,
-      selectedCat: null,
-      showForm: false,
-      showScheduler: false
-    };
-  },
-  computed: {
-    favoriteCats() {
-      return this.cats.filter(cat => this.userPreferences.favorites.includes(cat.id));
+      favorites: [],
+      userPrefs: null,
+      modalCat: null,
+      currentView: null,
+      loading: true,
+      error: null
     }
   },
   async mounted() {
-    // Load cats
     try {
-      const res = await fetch('./cats.json');
-      this.cats = await res.json();
-    } catch (err) {
-      console.error('Could not load cats.json:', err);
-    }
+      const catsRes = await fetch('./cats.json')
+      this.cats = await catsRes.json()
 
-    // Load user preferences from localStorage or fallback JSON
-    const savedPrefs = localStorage.getItem('userPreferences');
-    if (savedPrefs) {
-      this.userPreferences = JSON.parse(savedPrefs);
-    } else {
-      try {
-        const res = await fetch('./userPreferences.json');
-        this.userPreferences = await res.json();
-        localStorage.setItem('userPreferences', JSON.stringify(this.userPreferences));
-      } catch {
-        console.warn('No userPreferences.json found — using default');
+      const stored = localStorage.getItem('userPrefs')
+      if (stored) {
+        this.userPrefs = JSON.parse(stored)
+        this.favorites = this.userPrefs.favorites || []
+      } else {
+        const prefsRes = await fetch('./userPreferences.json')
+        this.userPrefs = await prefsRes.json()
+        this.favorites = this.userPrefs.favorites || []
       }
+    } catch (e) {
+      console.error(e)
+      this.error = 'Unable to load data. Make sure you’re running a local server.'
+    } finally {
+      this.loading = false
     }
   },
   methods: {
-    // Toggle favorite status
-    handleToggleFavorite(cat) {
-      const index = this.userPreferences.favorites.indexOf(cat.id);
-      if (index >= 0) this.userPreferences.favorites.splice(index, 1);
-      else this.userPreferences.favorites.push(cat.id);
-      localStorage.setItem('userPreferences', JSON.stringify(this.userPreferences));
-    },
+    toggleFavorite(cat) {
+      const idx = this.favorites.findIndex(f => f.id === cat.id)
+      if (idx >= 0) this.favorites.splice(idx, 1)
+      else this.favorites.push(cat)
 
-    handleFavoriteRemoved(catId) {
-      const index = this.userPreferences.favorites.indexOf(catId);
-      if (index >= 0) this.userPreferences.favorites.splice(index, 1);
-      localStorage.setItem('userPreferences', JSON.stringify(this.userPreferences));
+      this.userPrefs.favorites = this.favorites
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
     },
-
-    // Modal
+    removeFavorite(cat) {
+      this.favorites = this.favorites.filter(f => f.id !== cat.id)
+      this.userPrefs.favorites = this.favorites
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
+    },
     openModal(cat) {
-      this.selectedCat = cat;
-      this.modalVisible = true;
+      this.modalCat = cat
     },
-
-    // Scheduler/Form
-    openSchedulerForm(cat) {
-      this.showForm = true;
+    openForm(cat=null) {
+      this.modalCat = cat
+      this.currentView = 'form'
     },
-
-    handleAppointmentSubmitted(newMeeting) {
-      this.userPreferences.meetings.push(newMeeting);
-      localStorage.setItem('userPreferences', JSON.stringify(this.userPreferences));
-      this.showForm = false;
-      this.showScheduler = true;
+    submitAppointment(meeting) {
+      if (!this.userPrefs.meetings) this.userPrefs.meetings = []
+      this.userPrefs.meetings.push(meeting)
+      localStorage.setItem('userPrefs', JSON.stringify(this.userPrefs))
+      this.currentView = null
+      this.modalCat = null
     },
-
-    handleMeetingCancelled() {
-      localStorage.setItem('userPreferences', JSON.stringify(this.userPreferences));
+    viewFavorites() {
+      this.currentView = 'favorites'
+    },
+    viewScheduler() {
+      this.currentView = 'scheduler'
     }
   }
-};
+}
 </script>
 
-<style>
-#app {
-  max-width: 900px;
-  margin: 0 auto;
+<style scoped>
+.app-container {
   padding: 2rem;
-  font-family: 'Inter', sans-serif;
-  color: #0c1b22;
-  background-color: var(--primary);
 }
 
-.cats-list {
-  display: flex;
-  flex-direction: column;
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
   gap: 1rem;
-  margin-bottom: 2rem;
+}
+
+.status {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+.status.error {
+  color: red;
 }
 </style>
